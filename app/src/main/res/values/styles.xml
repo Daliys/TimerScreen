@@ -9,11 +9,11 @@
     </style>
 
     <style name="MyTheme" parent="Theme.AppCompat">
-    <item name="android:windowBackground">@color/colorBackground</item>
-    <item name="android:textColor">@color/colorText</item>
-    <item name="android:windowNoTitle">true</item>
-    <item name="android:windowFullscreen">true</item>
-</style>
+        <item name="android:windowBackground">@color/colorBackground</item>
+        <item name="android:textColor">@color/colorText</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
 
 
     <style name="MyThemeNoTitle" parent="Theme.AppCompat.NoActionBar">

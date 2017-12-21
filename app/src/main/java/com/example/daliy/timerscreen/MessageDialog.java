@@ -12,8 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 
 public class MessageDialog extends AppCompatActivity
 {
-
-
+    // вызывает диалоговое окно с кнопкой и дальшейшим закритием приложения
     public static void messageDialogAndClose(String title , String content, Context a){
         AlertDialog alert;
         AlertDialog.Builder builder = new AlertDialog.Builder(a);
@@ -29,7 +28,7 @@ public class MessageDialog extends AppCompatActivity
         alert = builder.create();
         alert.show();
     }
-
+    // вызывает диалоговое окно с кнопкой
     public static void messageDialog(String title , String content, Context a){
         AlertDialog alert;
         AlertDialog.Builder builder = new AlertDialog.Builder(a);
@@ -49,7 +48,7 @@ public class MessageDialog extends AppCompatActivity
 
     AlertDialog.Builder builder;
     AlertDialog alert;
-
+    // вызывает диалоговое окно с ожиданием закрытия
     public void messageDialogNoButton(String title , String content, Context a){
         builder = new AlertDialog.Builder(a);
         builder.setTitle(title)
@@ -59,6 +58,7 @@ public class MessageDialog extends AppCompatActivity
         alert = builder.create();
         alert.show();
     }
+    // закрытие ожидающего диологового окна
     public void CloseMessageDialogNoButton(){
        alert.dismiss();
     }

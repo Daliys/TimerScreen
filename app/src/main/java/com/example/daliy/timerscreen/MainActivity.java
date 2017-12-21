@@ -22,8 +22,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        FinishManager.addActivity(this);
-        Bluetooth.context = this;
+        FinishManager.addActivity(this);    // передаём текущую активность (для закрытия приложения при критических ошибках)
+        Bluetooth.context = this;           // передаем текущий контент (для вывода диалоговых окон на экран)
 
         listDevice = findViewById(R.id.listDevice);
         textView = findViewById(R.id.textView);
@@ -34,8 +34,9 @@ public class MainActivity extends AppCompatActivity {
 
         String[] stringDevices =  bt.StartBluetooth();
         if(stringDevices != null) {
+            // Создаем лист с спаренными bluetooth устройствами
             ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_multiple_choice, stringDevices);
-            listDevice.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+            listDevice.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);    // указываем множественный выбор Bluetooth
             listDevice.setAdapter(arrayAdapter);
 
             buttonSelect.setOnClickListener(new View.OnClickListener() {
@@ -43,24 +44,27 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     textView.setText("Mac : ");
 
+                    // при условии что не 1 устройство не выбрано, попросить выбрать минимум 1 устройство
                     if(listDevice.getCheckedItemCount() <= 0){
                         MessageDialog.messageDialog("Внимание!" , "\nНужно выбрать минимум 1 устройство!" ,MainActivity.this);
                         return;
                     }
-                    SparseBooleanArray sparseBooleanArray = listDevice.getCheckedItemPositions();
+
+                    SparseBooleanArray sparseBooleanArray = listDevice.getCheckedItemPositions(); // получаем массив со всеми эллементами листа и с булевскими значениями выброно ли устройство или нет
                     for(int a = 0; a < listDevice.getCount(); a++){
                         if(sparseBooleanArray.get(a)){
-                           Bluetooth.AddBluetoothConnectionDevices(a);
+                           Bluetooth.AddBluetoothConnectionDevices(a);  // добовляем все выбранные устройства в лист для дальнейшего подключения
                         }
                     }
+                    // переходим на активность с управлением bluetooth
                     Intent intent = new Intent(MainActivity.this, ScreenActivity.class);
                     startActivity(intent);
                     FinishManager.finishActivity(MainActivity.class);
                 }
             });
 
-
-
+        }else{
+            MessageDialog.messageDialogAndClose("Ошибка","Нет подключенных Bluetooth устройств",this);
         }
 
     }
