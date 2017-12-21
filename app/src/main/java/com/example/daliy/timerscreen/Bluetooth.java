@@ -135,7 +135,7 @@ public  class  Bluetooth {
                     if(btSocket == null) setText(false);
                     else {
                         if (btSocket.isConnected()) {
-                            if(lostPackets >= 20){
+                            if(lostPackets >= 10){
                                 lostPackets = 0;
                                 setText(false);
                                 Reconnect();
@@ -426,6 +426,7 @@ public  class  Bluetooth {
                                 ScreenActivity.button1.setAlpha(0.5f);
                                 ScreenActivity.button2.setClickable(false);
                                 ScreenActivity.button2.setAlpha(0.5f);
+                                ScreenActivity.button4.setClickable(false);
                                 ScreenActivity.button4.setAlpha(0.5f);
 
 
