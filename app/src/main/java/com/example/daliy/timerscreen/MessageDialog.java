@@ -8,6 +8,9 @@ import android.support.v7.app.AppCompatActivity;
 
 /**
  * Created by Daliys on 06.12.2017.
+ *
+ *
+ *
  */
 
 public class MessageDialog extends AppCompatActivity

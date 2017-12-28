@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 /**
  * Created by Daliys on 05.12.2017.
+ *
+ *
  */
 public class MainActivity extends AppCompatActivity {
     ListView listDevice;

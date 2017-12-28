@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.UiThread;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.util.UUID;
 /**
  * Created by Daliys     on 05.12.2017.
  *
+ * 
  */
 
 public  class  Bluetooth {
@@ -37,17 +39,20 @@ public  class  Bluetooth {
     private static BluetoothAdapter bluetoothAdapter;
     private static BluetoothSocket btSocket = null;
     static Context context;
-    private static boolean isConnect = false;
+    private static boolean isConnect = false;   // Состояние подключенно (подключено\ не подключено)
     // for data
-    private static short StageMode = 0;
-    private static String Minute = "";
-    private static String Second = "";
-    private static String SH = "";
-    private static String Power = "";
-    private static int lostPackets = 0;
+    private static short StageMode = 0; // значения сотояния экрана
+    private static String Minute = "";  // значение минут
+    private static String Second = "";  // значение секунд
+    private static String SH = "";      // значение шима
+    private static String Power = "";   // значение мощности
+    private static short Colon = 0;   // значение мощности
+    private static int lostPackets = 0; // для подсчета потерянных пакетов данных
+    private static String ColorWhite = "#FFFFFF";
+    private static String ColorGreen = "#00CC00";
     //
 
-
+        ///  включение Bluetooth и получение спаренных устройств
     public String[] StartBluetooth() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -93,24 +98,27 @@ public  class  Bluetooth {
         return null;
     }
 
+    // подключение к следующему устройству
     public static void ConnectToNextBluetooth(){
         if(currentIdConnectedBluetooth +1 >= listMacSelectedBluetoothDevices.size()) currentIdConnectedBluetooth = 0;
         else currentIdConnectedBluetooth++;
         DisconnectBluetooth();
         ConnectToBluetooth();
     }
+    // подключение к предыдущему устровйтву
     public static void ConnectToBeforeBluetooth(){
         if(currentIdConnectedBluetooth -1 < 0) currentIdConnectedBluetooth = listMacSelectedBluetoothDevices.size()-1;
         else currentIdConnectedBluetooth--;
         DisconnectBluetooth();
         ConnectToBluetooth();
     }
+    //подключение к текущему устройтву (при старте подключение к 0)
     public static void ConnectToCurrentBluetooth(){
         DisconnectBluetooth();
         ConnectToBluetooth();
     }
 
-    public static void ConnectToBluetooth(){
+    private static void ConnectToBluetooth(){
         MessageDialog messageDialogWait = new MessageDialog();
         messageDialogWait.messageDialogNoButton("","Please Wait", context);
 
@@ -125,7 +133,7 @@ public  class  Bluetooth {
         currentIdConnectedBluetooth = 0;
     }
 
-
+    // проверка на подключение к устройству (1 в сек)
     public static void  StartCheckStatusConnection(final TextView textView){
         final Thread thread = new Thread(new Runnable() {
             @Override
@@ -135,7 +143,7 @@ public  class  Bluetooth {
                     if(btSocket == null) setText(false);
                     else {
                         if (btSocket.isConnected()) {
-                            if(lostPackets >= 10){
+                            if(lostPackets >= 10){      // если потеряно больше чем 10 пакетов (не пришел ответ) попробовать переподключиться к устройству
                                 lostPackets = 0;
                                 setText(false);
                                 Reconnect();
@@ -151,6 +159,7 @@ public  class  Bluetooth {
                     }catch (Exception s){ Log.e("Bluetooth","Check isConnect: "  +s.toString());}
                 }
             }
+
             @UiThread
             public void setText(final boolean isConnect) {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -170,6 +179,7 @@ public  class  Bluetooth {
 
                 });
             }
+
             @UiThread
             public void Reconnect() {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -204,29 +214,20 @@ public  class  Bluetooth {
         }catch (Exception v){    Log.e("BtSocket  ", " cant DisconnectBluetooth  " + v);}
     }
 
+
     public static void SendData(String str){
+
         try{
+
                 byte[] msgBuffer = str.getBytes();
                 OutputStream outStream = btSocket.getOutputStream();
                 outStream.write(msgBuffer);
-
+                Log.d("SendData",  str + "");
         }catch (Exception f){
             Log.e("SendData", "Cant send Data");
         }
     }
-
-    public static void SendData(byte bytes){
-        try{
-            Log.e("SendData",bytes + " d");
-                OutputStream outStream = btSocket.getOutputStream();
-                outStream.write(bytes);
-            Log.e("SendData","Finish");
-
-        }catch (Exception f){
-            Log.e("SendData", "Cant send Data");
-        }
-    }
-    // метод для ловли данных с bluetooth
+    // метод для получения данных с bluetooth
     public static void GetDataBluetooth() {
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -318,6 +319,10 @@ public  class  Bluetooth {
                                                 Power = "0" + (bytes[i + 1] - 48);
                                             }
                                             break;
+                                        case 'I':
+                                            if((i+1) < count)
+                                                Colon = (short)(bytes[i+1]-48);
+                                            break;
                                     }
 
                                 }
@@ -325,14 +330,9 @@ public  class  Bluetooth {
                             }
                         }
                     } catch (NullPointerException nulE) {
-
                     } catch (IOException e) {
-
                         Log.e("While", "Buffer =" + e);
-                        //break;
                     }
-
-
                 }
             }
 
@@ -355,7 +355,15 @@ public  class  Bluetooth {
                                 ScreenActivity.textViewSecond.setText(Second);
 
 
-                                ActivAll();
+                                ActivateAll();
+
+                                ScreenActivity.button1.setTextColor(Color.parseColor(ColorGreen));
+                                ScreenActivity.button2.setTextColor(Color.parseColor(ColorGreen));
+                                ScreenActivity.button3.setTextColor(Color.parseColor(ColorWhite));
+                                ScreenActivity.button4.setTextColor(Color.parseColor(ColorWhite));
+
+
+                                ScreenActivity.textViewColon.setVisibility(View.VISIBLE);
 
                                 ScreenActivity.button4.setClickable(false);
                                 ScreenActivity.button4.setAlpha(0.5f);
@@ -370,7 +378,14 @@ public  class  Bluetooth {
                                 ScreenActivity.textViewSecond.setText(Second);
 
 
-                                ActivAll();
+                                ActivateAll();
+
+                                ScreenActivity.button1.setTextColor(Color.parseColor(ColorWhite));
+                                ScreenActivity.button2.setTextColor(Color.parseColor(ColorWhite));
+                                ScreenActivity.button3.setTextColor(Color.parseColor(ColorGreen));
+                                ScreenActivity.button4.setTextColor(Color.parseColor(ColorGreen));
+
+                                ScreenActivity.textViewColon.setVisibility(View.VISIBLE);
 
                                 ScreenActivity.button2.setClickable(false);
                                 ScreenActivity.button2.setAlpha(0.5f);
@@ -387,7 +402,13 @@ public  class  Bluetooth {
                                 ScreenActivity.textViewSecond.setText("%");
 
 
-                                ActivAll();
+                                ActivateAll();
+
+                                ScreenActivity.button1.setTextColor(Color.parseColor(ColorGreen));
+                                ScreenActivity.button2.setTextColor(Color.parseColor(ColorWhite));
+                                ScreenActivity.button3.setTextColor(Color.parseColor(ColorGreen));
+                                ScreenActivity.button4.setTextColor(Color.parseColor(ColorGreen));
+
 
                                 break;
                             case 3:
@@ -400,13 +421,25 @@ public  class  Bluetooth {
                                 ScreenActivity.textViewSecond.setText(Second);
 
 
-                                ActivAll();
+                                ActivateAll();
+
+                                ScreenActivity.button1.setTextColor(Color.parseColor(ColorWhite));
+                                ScreenActivity.button2.setTextColor(Color.parseColor(ColorWhite));
+                                ScreenActivity.button3.setTextColor(Color.parseColor(ColorWhite));
+                                ScreenActivity.button4.setTextColor(Color.parseColor(ColorGreen));
+
+                                ScreenActivity.textViewColon.setVisibility(View.VISIBLE);
+                                if(Colon == 1 ){
+                                    ScreenActivity.textViewColon.setTextColor(Color.parseColor("#FFC600"));
+                                }
+
+
 
                                 ScreenActivity.button1.setClickable(false);
                                 ScreenActivity.button1.setAlpha(0.5f);
                                 ScreenActivity.button2.setClickable(false);
                                 ScreenActivity.button2.setAlpha(0.5f);
-                                ScreenActivity.button3.setAlpha(0.5f);
+                                //ScreenActivity.button3.setAlpha(0.5f);
 
 
                                 break;
@@ -420,15 +453,20 @@ public  class  Bluetooth {
                                 ScreenActivity.textViewSecond.setText(Second);
 
 
-                                ActivAll();
+                                ActivateAll();
 
+                                ScreenActivity.button1.setTextColor(Color.parseColor(ColorWhite));
+                                ScreenActivity.button2.setTextColor(Color.parseColor(ColorWhite));
+                                ScreenActivity.button3.setTextColor(Color.parseColor(ColorGreen));
+                                ScreenActivity.button4.setTextColor(Color.parseColor(ColorWhite));
+
+                                ScreenActivity.textViewColon.setVisibility(View.VISIBLE);
                                 ScreenActivity.button1.setClickable(false);
                                 ScreenActivity.button1.setAlpha(0.5f);
                                 ScreenActivity.button2.setClickable(false);
                                 ScreenActivity.button2.setAlpha(0.5f);
-                                ScreenActivity.button4.setClickable(false);
-                                ScreenActivity.button4.setAlpha(0.5f);
-
+                                //ScreenActivity.button4.setClickable(false);
+                                //ScreenActivity.button4.setAlpha(0.5f);
 
                                 break;
 
@@ -442,15 +480,25 @@ public  class  Bluetooth {
                                 ScreenActivity.textViewMinute.setText(SH);
                                 ScreenActivity.textViewSecond.setText("");
 
-                                ActivAll();
+                                ActivateAll();
+
+                                ScreenActivity.button1.setTextColor(Color.parseColor(ColorWhite));
+                                ScreenActivity.button2.setTextColor(Color.parseColor(ColorWhite));
+                                ScreenActivity.button3.setTextColor(Color.parseColor(ColorWhite));
+                                ScreenActivity.button4.setTextColor(Color.parseColor(ColorGreen));
 
                                 break;
-
-
                         }
                     }
 
-                    private void ActivAll(){
+                    private void ActivateAll(){
+                        if(Colon == 0)
+                            ScreenActivity.textViewColon.setTextColor(Color.parseColor("#32CD32"));
+                        if(StageMode != 3){
+                            ScreenActivity.textViewColon.setTextColor(Color.parseColor("#32CD32"));
+                        }
+
+                        ScreenActivity.textViewColon.setVisibility(View.INVISIBLE);
                         ScreenActivity.button1.setAlpha(1);
                         ScreenActivity.button2.setAlpha(1);
                         ScreenActivity.button3.setAlpha(1);
@@ -460,13 +508,9 @@ public  class  Bluetooth {
                         ScreenActivity.button2.setClickable(true);
                         ScreenActivity.button3.setClickable(true);
                         ScreenActivity.button4.setClickable(true);
-
                     }
                 });
             }
-
-
-
         });
         thread.start();
     }
@@ -499,7 +543,6 @@ public  class  Bluetooth {
         }
         @Override
         protected void onProgressUpdate(Void... items) {
-
            // MessageDialog.messageDialog("Критическая ошибка","Ошибка при подключении к Bluetooth. Проверте доступность Bluetooth.",context);
             logMsg();
         }

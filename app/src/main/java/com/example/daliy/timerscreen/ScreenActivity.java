@@ -1,5 +1,7 @@
 package com.example.daliy.timerscreen;
 
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -9,6 +11,7 @@ import android.widget.TextView;
 
 /**
  * Created by Daliys on 07.12.2017.
+ *
  */
 
 public class ScreenActivity extends AppCompatActivity {
@@ -16,10 +19,11 @@ public class ScreenActivity extends AppCompatActivity {
     Button buttonBefore;
     Button buttonNext;
     public static Button button1,button2,button3,button4;
-    public static TextView textViewMinute, textViewSecond;
+    public static TextView textViewMinute, textViewSecond, textViewColon;
     TextView textViewInformation;
     TextView textViewStatus;
-
+    String fontPath1 = "fonts/digital7.ttf";
+    String ColorText = "#32CD32";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -42,6 +46,8 @@ public class ScreenActivity extends AppCompatActivity {
         textViewInformation = findViewById(R.id.textViewInformation);
         textViewStatus = findViewById(R.id.textViewStatus);
 
+
+
         button1 = findViewById(R.id.button1);
         button2 = findViewById(R.id.button2);
         button3 = findViewById(R.id.button3);
@@ -49,6 +55,16 @@ public class ScreenActivity extends AppCompatActivity {
 
         textViewMinute = findViewById(R.id.textViewMin);
         textViewSecond = findViewById(R.id.textViewSec);
+        textViewColon = findViewById(R.id.textViewColon);
+
+        Typeface typeface1 = Typeface.createFromAsset(getAssets(), fontPath1);
+
+        textViewMinute.setTypeface(typeface1);
+        textViewMinute.setTextColor(Color.parseColor(ColorText));
+        textViewSecond.setTypeface(typeface1);
+        textViewSecond.setTextColor(Color.parseColor(ColorText));
+        textViewColon.setTypeface(typeface1);
+        textViewColon.setTextColor(Color.parseColor(ColorText));
 
         textViewInformation.setText(Bluetooth.GetCurrentBluetoothName() + "\n" + Bluetooth.GetCurrentBluetoothMac());
         textViewStatus.setText("ONLINE");
@@ -86,21 +102,18 @@ public class ScreenActivity extends AppCompatActivity {
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 Bluetooth.SendData("2");
             }
         });
         button3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 Bluetooth.SendData("3");
             }
         });
         button4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 Bluetooth.SendData("4");
             }
         });
