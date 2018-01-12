@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.daliy.timerscreen.MainActivity">
+    tools:context="com.timscrene.daliy.timerscreen.Daliys.example.daliy.timerscreen.MainActivity">
 
     <TextView
         android:id="@+id/textView"

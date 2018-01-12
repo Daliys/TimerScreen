@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.daliy.timerscreen">
+    package="com.timscrene.daliy.timerscreen">
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -13,7 +13,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/MyTheme">
-        <activity android:name=".MainActivity"
+        <activity android:name="com.timscrene.daliy.timerscreen.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/MyTheme">
             <intent-filter>
@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ScreenActivity"
+        <activity android:name="com.timscrene.daliy.timerscreen.ScreenActivity"
             android:screenOrientation="landscape"
             android:theme="@style/MyThemeNoTitle"
             >

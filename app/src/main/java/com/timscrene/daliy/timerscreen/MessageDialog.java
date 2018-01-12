@@ -1,6 +1,5 @@
-package com.example.daliy.timerscreen;
+package com.timscrene.daliy.timerscreen;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;

@@ -1,4 +1,4 @@
-package com.example.daliy.timerscreen;
+package com.timscrene.daliy.timerscreen;
 
 /**
  * Created by Daliys on 06.12.2017.

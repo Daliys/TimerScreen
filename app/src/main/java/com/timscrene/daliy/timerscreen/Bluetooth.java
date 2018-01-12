@@ -1,4 +1,4 @@
-package com.example.daliy.timerscreen;
+package com.timscrene.daliy.timerscreen;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -48,6 +48,8 @@ public  class  Bluetooth {
     private static String Power = "";   // значение мощности
     private static short Colon = 0;   // значение мощности
     private static int lostPackets = 0; // для подсчета потерянных пакетов данных
+    private static short isEnableDev1 = 0;
+    private static short isEnableDev2 = 0;
     private static String ColorWhite = "#FFFFFF";
     private static String ColorGreen = "#00CC00";
     //
@@ -323,6 +325,16 @@ public  class  Bluetooth {
                                             if((i+1) < count)
                                                 Colon = (short)(bytes[i+1]-48);
                                             break;
+                                      case 'R':
+                                            if((i+1) < count)
+                                                isEnableDev1 = (short)(bytes[i+1]-48);
+                                            break;
+                                    case 'E':
+                                            if((i+1) < count)
+                                                isEnableDev2 = (short)(bytes[i+1]-48);
+                                            break;
+
+
                                     }
 
                                 }
@@ -362,6 +374,18 @@ public  class  Bluetooth {
                                 ScreenActivity.button3.setTextColor(Color.parseColor(ColorWhite));
                                 ScreenActivity.button4.setTextColor(Color.parseColor(ColorWhite));
 
+                                if(isEnableDev1 == 0){
+                                    ScreenActivity.textViewDev1.setText("Изл.\\n620 нм\\n\\nВЫКЛ");
+                                    ScreenActivity.textViewDev2.setText("Изл.\\n740 нм\\n\\nВЫКЛ");
+                                    ScreenActivity.textViewDev1.setAlpha(0.3f);
+                                    ScreenActivity.textViewDev2.setAlpha(0.3f);
+                                }
+                                else {
+                                    ScreenActivity.textViewDev1.setText("Изл.\\n620 нм\\n\\nВКЛ");
+                                    ScreenActivity.textViewDev2.setText("Изл.\\n740 нм\\n\\nВКЛ");
+                                    ScreenActivity.textViewDev1.setAlpha(1);
+                                    ScreenActivity.textViewDev2.setAlpha(1);
+                                }
 
                                 ScreenActivity.textViewColon.setVisibility(View.VISIBLE);
 
@@ -496,6 +520,18 @@ public  class  Bluetooth {
                             ScreenActivity.textViewColon.setTextColor(Color.parseColor("#32CD32"));
                         if(StageMode != 3){
                             ScreenActivity.textViewColon.setTextColor(Color.parseColor("#32CD32"));
+                        }
+
+                        if(StageMode == 0){
+                            ScreenActivity.textViewDev1.setAlpha(1);
+                            ScreenActivity.textViewDev1.setClickable(true);
+                            ScreenActivity.textViewDev2.setAlpha(1);
+                            ScreenActivity.textViewDev2.setClickable(true);
+                        }else{
+                            ScreenActivity.textViewDev1.setAlpha(0.5f);
+                            ScreenActivity.textViewDev1.setClickable(false);
+                            ScreenActivity.textViewDev2.setAlpha(0.5f);
+                            ScreenActivity.textViewDev2.setClickable(false);
                         }
 
                         ScreenActivity.textViewColon.setVisibility(View.INVISIBLE);

@@ -1,4 +1,4 @@
-package com.example.daliy.timerscreen;
+package com.timscrene.daliy.timerscreen;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -18,8 +18,8 @@ public class ScreenActivity extends AppCompatActivity {
 
     Button buttonBefore;
     Button buttonNext;
-    public static Button button1,button2,button3,button4;
-    public static TextView textViewMinute, textViewSecond, textViewColon;
+    public static Button button1,button2,button3,button4,button5,button6;
+    public static TextView textViewMinute, textViewSecond, textViewColon, textViewDev1, textViewDev2;
     TextView textViewInformation;
     TextView textViewStatus;
     String fontPath1 = "fonts/digital7.ttf";
@@ -52,10 +52,14 @@ public class ScreenActivity extends AppCompatActivity {
         button2 = findViewById(R.id.button2);
         button3 = findViewById(R.id.button3);
         button4 = findViewById(R.id.button4);
+        button5 = findViewById(R.id.button5);
+        button6 = findViewById(R.id.button6);
 
         textViewMinute = findViewById(R.id.textViewMin);
         textViewSecond = findViewById(R.id.textViewSec);
         textViewColon = findViewById(R.id.textViewColon);
+        textViewDev1 = findViewById(R.id.textViewDev1);
+        textViewDev2 = findViewById(R.id.textViewDev2);
 
         Typeface typeface1 = Typeface.createFromAsset(getAssets(), fontPath1);
 
@@ -65,6 +69,11 @@ public class ScreenActivity extends AppCompatActivity {
         textViewSecond.setTextColor(Color.parseColor(ColorText));
         textViewColon.setTypeface(typeface1);
         textViewColon.setTextColor(Color.parseColor(ColorText));
+        textViewDev1.setTypeface(typeface1);
+        textViewDev1.setTextColor(Color.parseColor(ColorText));
+        textViewDev2.setTypeface(typeface1);
+        textViewDev2.setTextColor(Color.parseColor(ColorText));
+
 
         textViewInformation.setText(Bluetooth.GetCurrentBluetoothName() + "\n" + Bluetooth.GetCurrentBluetoothMac());
         textViewStatus.setText("ONLINE");
@@ -115,6 +124,18 @@ public class ScreenActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Bluetooth.SendData("4");
+            }
+        });
+        button5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bluetooth.SendData("5");
+            }
+        });
+        button6.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bluetooth.SendData("6");
             }
         });
 

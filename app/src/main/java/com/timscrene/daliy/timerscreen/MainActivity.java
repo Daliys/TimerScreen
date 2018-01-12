@@ -1,4 +1,4 @@
-package com.example.daliy.timerscreen;
+package com.timscrene.daliy.timerscreen;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;

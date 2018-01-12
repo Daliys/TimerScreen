@@ -1,4 +1,4 @@
-package com.example.daliy.timerscreen;
+package com.timscrene.daliy.timerscreen;
 
 import org.junit.Test;
 
