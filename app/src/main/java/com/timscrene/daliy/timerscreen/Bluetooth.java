@@ -47,11 +47,15 @@ public  class  Bluetooth {
     private static String SH = "";      // значение шима
     private static String Power = "";   // значение мощности
     private static short Colon = 0;   // значение мощности
+    private static short numLamp = 2;
     private static int lostPackets = 0; // для подсчета потерянных пакетов данных
     private static short isEnableDev1 = 0;
     private static short isEnableDev2 = 0;
+    private static boolean isNewConnection = true;
+    private static boolean isSendDataL = false;
     private static String ColorWhite = "#FFFFFF";
     private static String ColorGreen = "#00CC00";
+    private static boolean isButtonConnection = true;
     //
 
         ///  включение Bluetooth и получение спаренных устройств
@@ -106,6 +110,7 @@ public  class  Bluetooth {
         else currentIdConnectedBluetooth++;
         DisconnectBluetooth();
         ConnectToBluetooth();
+        isButtonConnection= false;
     }
     // подключение к предыдущему устровйтву
     public static void ConnectToBeforeBluetooth(){
@@ -113,16 +118,19 @@ public  class  Bluetooth {
         else currentIdConnectedBluetooth--;
         DisconnectBluetooth();
         ConnectToBluetooth();
+        isButtonConnection= false;
     }
     //подключение к текущему устройтву (при старте подключение к 0)
     public static void ConnectToCurrentBluetooth(){
         DisconnectBluetooth();
         ConnectToBluetooth();
+        isButtonConnection= false;
     }
 
     private static void ConnectToBluetooth(){
         MessageDialog messageDialogWait = new MessageDialog();
         messageDialogWait.messageDialogNoButton("","Please Wait", context);
+        isNewConnection = true;
 
         ConnectionTask pt = new ConnectionTask();
         pt.execute(messageDialogWait);
@@ -209,7 +217,7 @@ public  class  Bluetooth {
             if(btSocket != null){
                 if(btSocket.isConnected()) {
                     btSocket.close();
-                    Thread.currentThread().sleep(500);
+                    Thread.currentThread().sleep(250);
                 }
                 Log.i("BtSocket  ", "dis  " + btSocket.isConnected());
             }
@@ -220,7 +228,6 @@ public  class  Bluetooth {
     public static void SendData(String str){
 
         try{
-
                 byte[] msgBuffer = str.getBytes();
                 OutputStream outStream = btSocket.getOutputStream();
                 outStream.write(msgBuffer);
@@ -238,7 +245,7 @@ public  class  Bluetooth {
                 long time = System.currentTimeMillis();
                 boolean isDataRequest = false;
                 while (true) {
-                    if (isConnect) {
+                    if (isConnect && isButtonConnection) {
                         try {
                             inputStream = btSocket.getInputStream();
 
@@ -247,13 +254,20 @@ public  class  Bluetooth {
                         }
                     }
                     //Log.i("LOG",System.currentTimeMillis() + " time " + time);
-                    if ((time + 500) < System.currentTimeMillis() && isConnect) {
+                    if((time + 500) < System.currentTimeMillis() && (isNewConnection || !isSendDataL) && isConnect) {    // при новом пожключение к девайсу запросить сколько ламп у него установленно
+                        SendData("B");
+                        isNewConnection = false;
+                        isDataRequest = true;
+                        time = System.currentTimeMillis();
+                        Log.e("B", "+ Send");
+                        lostPackets++;
+                    }
+                    else if ((time + 500) < System.currentTimeMillis() && isConnect) {
                         time = System.currentTimeMillis();
                         SendData("D");
                         isDataRequest = true;
-                        Log.e("D", "+");
+                        Log.e("D", "+ Send");
                         lostPackets++;
-
                     }
 
 
@@ -261,7 +275,7 @@ public  class  Bluetooth {
                     try {
                         // Read from the InputStream
 
-                        if (isConnect && isDataRequest) {
+                        if (isConnect && isDataRequest && isButtonConnection) {
                             isDataRequest = false;
                             int count = inputStream.available();
                             if (count >= 1) {
@@ -325,18 +339,22 @@ public  class  Bluetooth {
                                             if((i+1) < count)
                                                 Colon = (short)(bytes[i+1]-48);
                                             break;
-                                      case 'R':
+                                        case 'R':
                                             if((i+1) < count)
                                                 isEnableDev1 = (short)(bytes[i+1]-48);
                                             break;
-                                    case 'E':
+                                        case 'E':
                                             if((i+1) < count)
                                                 isEnableDev2 = (short)(bytes[i+1]-48);
+                                            break;
+                                        case 'L':
+                                            if((i+1) < count)
+                                                numLamp = (short)(bytes[i+1]-48);
+                                                isSendDataL = true;
                                             break;
 
 
                                     }
-
                                 }
                                 RefreshScreen();
                             }
@@ -358,10 +376,8 @@ public  class  Bluetooth {
                         Log.e("REFRESH","True" + " c"+StageMode + "M" + Minute + "S" + Second + "H"+SH+"P"+Power);
                         switch (StageMode){
                             case 0:
-                                ScreenActivity.button1.setText("Время");
-                                ScreenActivity.button2.setText("Мощность");
-                                ScreenActivity.button3.setText("Старт");
-                                ScreenActivity.button4.setText("Пауза");
+
+                                SetButtonsText("Время","Мощность","Старт","Пауза");
 
                                 ScreenActivity.textViewMinute.setText(Minute);
                                 ScreenActivity.textViewSecond.setText(Second);
@@ -369,23 +385,9 @@ public  class  Bluetooth {
 
                                 ActivateAll();
 
-                                ScreenActivity.button1.setTextColor(Color.parseColor(ColorGreen));
-                                ScreenActivity.button2.setTextColor(Color.parseColor(ColorGreen));
-                                ScreenActivity.button3.setTextColor(Color.parseColor(ColorWhite));
-                                ScreenActivity.button4.setTextColor(Color.parseColor(ColorWhite));
+                                SetButtonsTextColor(ColorGreen,ColorGreen,ColorWhite,ColorWhite);
 
-                                if(isEnableDev1 == 0){
-                                    ScreenActivity.textViewDev1.setText("Изл.\\n620 нм\\n\\nВЫКЛ");
-                                    ScreenActivity.textViewDev2.setText("Изл.\\n740 нм\\n\\nВЫКЛ");
-                                    ScreenActivity.textViewDev1.setAlpha(0.3f);
-                                    ScreenActivity.textViewDev2.setAlpha(0.3f);
-                                }
-                                else {
-                                    ScreenActivity.textViewDev1.setText("Изл.\\n620 нм\\n\\nВКЛ");
-                                    ScreenActivity.textViewDev2.setText("Изл.\\n740 нм\\n\\nВКЛ");
-                                    ScreenActivity.textViewDev1.setAlpha(1);
-                                    ScreenActivity.textViewDev2.setAlpha(1);
-                                }
+
 
                                 ScreenActivity.textViewColon.setVisibility(View.VISIBLE);
 
@@ -393,10 +395,8 @@ public  class  Bluetooth {
                                 ScreenActivity.button4.setAlpha(0.5f);
                                 break;
                             case 1:
-                                ScreenActivity.button1.setText("Время");
-                                ScreenActivity.button2.setText("Мощность");
-                                ScreenActivity.button3.setText("+");
-                                ScreenActivity.button4.setText("-");
+
+                                SetButtonsText("Время","Мощность","+","-");
 
                                 ScreenActivity.textViewMinute.setText(Minute);
                                 ScreenActivity.textViewSecond.setText(Second);
@@ -404,10 +404,7 @@ public  class  Bluetooth {
 
                                 ActivateAll();
 
-                                ScreenActivity.button1.setTextColor(Color.parseColor(ColorWhite));
-                                ScreenActivity.button2.setTextColor(Color.parseColor(ColorWhite));
-                                ScreenActivity.button3.setTextColor(Color.parseColor(ColorGreen));
-                                ScreenActivity.button4.setTextColor(Color.parseColor(ColorGreen));
+                                SetButtonsTextColor(ColorWhite,ColorWhite,ColorGreen,ColorGreen);
 
                                 ScreenActivity.textViewColon.setVisibility(View.VISIBLE);
 
@@ -416,11 +413,8 @@ public  class  Bluetooth {
 
                                 break;
                             case 2:
-                                ScreenActivity.button1.setText("ШИМ");
-                                ScreenActivity.button2.setText("Мощность");
-                                ScreenActivity.button3.setText("+");
-                                ScreenActivity.button4.setText("-");
 
+                                SetButtonsText("ШИМ","Мощность","+","-");
 
                                 ScreenActivity.textViewMinute.setText(Power);
                                 ScreenActivity.textViewSecond.setText("%");
@@ -428,18 +422,14 @@ public  class  Bluetooth {
 
                                 ActivateAll();
 
-                                ScreenActivity.button1.setTextColor(Color.parseColor(ColorGreen));
-                                ScreenActivity.button2.setTextColor(Color.parseColor(ColorWhite));
-                                ScreenActivity.button3.setTextColor(Color.parseColor(ColorGreen));
-                                ScreenActivity.button4.setTextColor(Color.parseColor(ColorGreen));
+                                SetButtonsTextColor(ColorGreen,ColorWhite,ColorGreen,ColorGreen);
+
 
 
                                 break;
                             case 3:
-                                ScreenActivity.button1.setText("Время");
-                                ScreenActivity.button2.setText("Мощность");
-                                ScreenActivity.button3.setText("Стоп");
-                                ScreenActivity.button4.setText("Пауза");
+
+                                SetButtonsText("Время","Мощность","Стоп","Пауза");
 
                                 ScreenActivity.textViewMinute.setText(Minute);
                                 ScreenActivity.textViewSecond.setText(Second);
@@ -447,10 +437,8 @@ public  class  Bluetooth {
 
                                 ActivateAll();
 
-                                ScreenActivity.button1.setTextColor(Color.parseColor(ColorWhite));
-                                ScreenActivity.button2.setTextColor(Color.parseColor(ColorWhite));
-                                ScreenActivity.button3.setTextColor(Color.parseColor(ColorWhite));
-                                ScreenActivity.button4.setTextColor(Color.parseColor(ColorGreen));
+                                SetButtonsTextColor(ColorWhite,ColorWhite,ColorWhite,ColorGreen);
+
 
                                 ScreenActivity.textViewColon.setVisibility(View.VISIBLE);
                                 if(Colon == 1 ){
@@ -468,10 +456,8 @@ public  class  Bluetooth {
 
                                 break;
                             case 4:
-                                ScreenActivity.button1.setText("Время");
-                                ScreenActivity.button2.setText("Мощность");
-                                ScreenActivity.button3.setText("Стоп");
-                                ScreenActivity.button4.setText("Пауза");
+
+                                SetButtonsText("Время","Мощность","Стоп","Пауза");
 
                                 ScreenActivity.textViewMinute.setText(Minute);
                                 ScreenActivity.textViewSecond.setText(Second);
@@ -479,40 +465,74 @@ public  class  Bluetooth {
 
                                 ActivateAll();
 
-                                ScreenActivity.button1.setTextColor(Color.parseColor(ColorWhite));
-                                ScreenActivity.button2.setTextColor(Color.parseColor(ColorWhite));
-                                ScreenActivity.button3.setTextColor(Color.parseColor(ColorGreen));
-                                ScreenActivity.button4.setTextColor(Color.parseColor(ColorWhite));
+                                SetButtonsTextColor(ColorWhite,ColorWhite,ColorGreen,ColorWhite);
+
 
                                 ScreenActivity.textViewColon.setVisibility(View.VISIBLE);
                                 ScreenActivity.button1.setClickable(false);
                                 ScreenActivity.button1.setAlpha(0.5f);
                                 ScreenActivity.button2.setClickable(false);
                                 ScreenActivity.button2.setAlpha(0.5f);
-                                //ScreenActivity.button4.setClickable(false);
-                                //ScreenActivity.button4.setAlpha(0.5f);
 
                                 break;
 
                             case 5:
-                                ScreenActivity.button1.setText("ШИМ");
-                                ScreenActivity.button2.setText("Мощность");
-                                ScreenActivity.button3.setText("+");
-                                ScreenActivity.button4.setText("-");
 
+                                SetButtonsText("ШИМ","Мощность","+","-");
 
                                 ScreenActivity.textViewMinute.setText(SH);
                                 ScreenActivity.textViewSecond.setText("");
 
                                 ActivateAll();
 
-                                ScreenActivity.button1.setTextColor(Color.parseColor(ColorWhite));
-                                ScreenActivity.button2.setTextColor(Color.parseColor(ColorWhite));
-                                ScreenActivity.button3.setTextColor(Color.parseColor(ColorWhite));
-                                ScreenActivity.button4.setTextColor(Color.parseColor(ColorGreen));
+                                SetButtonsTextColor(ColorWhite,ColorGreen,ColorGreen,ColorGreen);
 
                                 break;
                         }
+                        if(numLamp == 2) {
+                            ScreenActivity.textViewDev1.setVisibility(View.VISIBLE);
+                            ScreenActivity.textViewDev2.setVisibility(View.VISIBLE);
+                            ScreenActivity.button5.setVisibility(View.VISIBLE);
+                            ScreenActivity.button6.setVisibility(View.VISIBLE);
+
+                            if (isEnableDev1 == 0) {      // проверка на то включено ли устройство 1 или выключено
+                                ScreenActivity.textViewDev1.setText("Изл.\n\n620 нм\n\nВЫКЛ");
+                                ScreenActivity.textViewDev1.setAlpha(0.3f);
+
+                            } else {
+                                ScreenActivity.textViewDev1.setText("Изл.\n\n620 нм\n\nВКЛ");
+                                ScreenActivity.textViewDev1.setAlpha(1);
+
+                            }
+
+                            if (isEnableDev2 == 0) {      // проверка на то включено ли устройство 2 или выключено
+                                ScreenActivity.textViewDev2.setText("Изл.\n\n740 нм\n\nВЫКЛ");
+                                ScreenActivity.textViewDev2.setAlpha(0.3f);
+                            } else {
+                                ScreenActivity.textViewDev2.setText("Изл.\n\n740 нм\n\nВКЛ");
+                                ScreenActivity.textViewDev2.setAlpha(1);
+                            }
+                        }else{
+                            ScreenActivity.textViewDev1.setVisibility(View.INVISIBLE);
+                            ScreenActivity.textViewDev2.setVisibility(View.INVISIBLE);
+                            ScreenActivity.button5.setVisibility(View.INVISIBLE);
+                            ScreenActivity.button6.setVisibility(View.INVISIBLE);
+                        }
+
+                    }
+
+                    private void SetButtonsText(String but1, String but2, String but3, String but4 ){
+                        ScreenActivity.button1.setText(but1);
+                        ScreenActivity.button2.setText(but2);
+                        ScreenActivity.button3.setText(but3);
+                        ScreenActivity.button4.setText(but4);
+                    }
+
+                    private void SetButtonsTextColor(String but1, String but2, String but3, String but4){
+                        ScreenActivity.button1.setTextColor(Color.parseColor(but1));
+                        ScreenActivity.button2.setTextColor(Color.parseColor(but2));
+                        ScreenActivity.button3.setTextColor(Color.parseColor(but3));
+                        ScreenActivity.button4.setTextColor(Color.parseColor(but4));
                     }
 
                     private void ActivateAll(){
@@ -523,15 +543,15 @@ public  class  Bluetooth {
                         }
 
                         if(StageMode == 0){
-                            ScreenActivity.textViewDev1.setAlpha(1);
-                            ScreenActivity.textViewDev1.setClickable(true);
-                            ScreenActivity.textViewDev2.setAlpha(1);
-                            ScreenActivity.textViewDev2.setClickable(true);
+                            ScreenActivity.button5.setAlpha(1);
+                            ScreenActivity.button5.setClickable(true);
+                            ScreenActivity.button6.setAlpha(1);
+                            ScreenActivity.button6.setClickable(true);
                         }else{
-                            ScreenActivity.textViewDev1.setAlpha(0.5f);
-                            ScreenActivity.textViewDev1.setClickable(false);
-                            ScreenActivity.textViewDev2.setAlpha(0.5f);
-                            ScreenActivity.textViewDev2.setClickable(false);
+                            ScreenActivity.button5.setAlpha(0.4f);
+                            ScreenActivity.button5.setClickable(false);
+                            ScreenActivity.button6.setAlpha(0.4f);
+                            ScreenActivity.button6.setClickable(false);
                         }
 
                         ScreenActivity.textViewColon.setVisibility(View.INVISIBLE);
@@ -566,7 +586,7 @@ public  class  Bluetooth {
 
                 btSocket.connect();
                 messageDialogsWait[0].CloseMessageDialogNoButton();
-
+                isButtonConnection= true;
             } catch (Exception e) {
                 try {
                     btSocket.close();
